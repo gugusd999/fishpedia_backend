@@ -11,8 +11,18 @@ class Form extends Model
     public static function start($action = "")
     {
         echo '
-            <form class="form-horizontal" action="' . $action . '" method="post">
+            <form class="form-horizontal" action="' . $action . '" method="post" enctype="multipart/form-data">
+            <div class="row">
         ';
+    }
+
+    public static function submit($action = "Submit", $class = "btn btn-primary ml-3")
+    {
+        echo '
+        <div class="col-sm-12">
+            <button type="submit" class="'.$class.'">' . $action . '</button>
+        </div>
+            ';
     }
 
     public static function getfile_db($data, $path, $name, $id, $table, $datapath = "")
@@ -66,7 +76,10 @@ class Form extends Model
 
     public static function end()
     {
-        echo '</form>';
+        echo '
+        </div>
+        </form>
+        ';
     }
 
     public static function summernote()
@@ -84,9 +97,45 @@ class Form extends Model
         }
     }
 
-    public static function input($data = [])
+
+    public static function slug($char = "")
     {
-        $html = '<div class="form-group mb-3">';
+
+        $char = strtolower($char) . '-' . date('y-m-d-h-i-s');
+        $char = str_replace("%", "", $char);
+        $char = str_replace("!", "", $char);
+        $char = str_replace("@", "", $char);
+        $char = str_replace("#", "", $char);
+        $char = str_replace("$", "", $char);
+        $char = str_replace("^", "", $char);
+        $char = str_replace("&", "", $char);
+        $char = str_replace("*", "", $char);
+        $char = str_replace("(", "", $char);
+        $char = str_replace(")", "", $char);
+        $char = str_replace("+", "", $char);
+        $char = str_replace("=", "", $char);
+        $char = str_replace(";", "", $char);
+        $char = str_replace(".", "", $char);
+        $char = str_replace(":", "", $char);
+        $char = str_replace("'", "", $char);
+        $char = str_replace('"', "", $char);
+        $char = str_replace("?", "", $char);
+        $char = str_replace("/", "-", $char);
+        $char = str_replace("{", "", $char);
+        $char = str_replace("}", "", $char);
+        $char = str_replace("[", "", $char);
+        $char = str_replace("]", "", $char);
+        $char = str_replace(" ", "-", $char);
+        return $char;
+    }
+
+
+    public static function input($data = [], $class = "col-sm-12")
+    {
+        $html = '';
+        $html .= '
+        <div class="'.$class.'">
+        <div class="form-group mb-3">';
         if (isset($data["show-image"])) {
             if ($data["show-image"] === true) {
                 $html .= '	<div  style="text-align: center;">';
@@ -99,9 +148,9 @@ class Form extends Model
             }
         }
         if (self::cekdata($data, 'type') != "hidden") {
-            $html .= '	<label for="' . self::cekdata($data, 'fc') . '" class="control-label col-lg-2">' . self::cekdata($data, 'title') . '</label>';
+            $html .= '	<label for="' . self::cekdata($data, 'fc') . '" class="control-label col-lg-12">' . self::cekdata($data, 'title') . '</label>';
         }
-        $html .= '<div class="col-lg-10">';
+        $html .= '<div class="col-lg-12">';
         $html .= '	<input ';
         $html .= ' type="' . self::cekdata($data, 'type') . '" ';
         $html .= ' id="' . self::cekdata($data, 'fc') . '" ';
@@ -175,11 +224,8 @@ class Form extends Model
             }
         }
 
-
-
-
-
         $html .= '>';
+        $html .= '</div>';
         $html .= '</div>';
         if (isset($data["show-image"])) {
             if ($data["show-image"] === true) {
@@ -245,9 +291,11 @@ class Form extends Model
 
 
 
-    public static function textarea($data)
+    public static function textarea($data, $class="col-sm-12")
     {
-        $html = '<div class="form-group">';
+        $html = '
+        <div class="'.$class.'">
+        <div class="form-group">';
         if (isset($data["show-image"])) {
             if ($data["show-image"] === true) {
                 $html .= '	<div  style="text-align: center;">';
@@ -262,6 +310,7 @@ class Form extends Model
         if (self::cekdata($data, 'type') != "hidden") {
             $html .= '	<label for="' . self::cekdata($data, 'fc') . '">' . self::cekdata($data, 'title') . '</label>';
         }
+        $html .= '<div class="col-lg-12">';
         $html .= '	<textarea ';
         $html .= ' type="' . self::cekdata($data, 'type') . '" ';
         $html .= ' id="' . self::cekdata($data, 'fc') . '" ';
@@ -298,13 +347,16 @@ class Form extends Model
         }
         $html .= '</textarea>';
         $html .= '</div>';
+        $html .= '</div>';
 
         echo $html;
     }
 
-    public static function editor($data)
+    public static function editor($data, $class="col-sm-12")
     {
-        $html = '<div class="form-group">';
+        $html = '
+        <div class="'.$class.'"> 
+        <div class="form-group row" style="padding: 0 10px;">';
         if (isset($data["show-image"])) {
             if ($data["show-image"] === true) {
                 $html .= '	<div  style="text-align: center;">';
@@ -358,38 +410,73 @@ class Form extends Model
         $html .= '$("#' . self::cekdata($data, 'fc') . '").summernote()';
         $html .= '</script>';
         $html .= '</div>';
+        $html .= '</div>';
 
         echo $html;
     }
 
-    public static function select_db($data = "")
+
+    public static function rowbackitem($table = "", $row = [], $item = "")
+    {
+        $db = \Config\Database::connect();
+        $getData = $db->query("SELECT $item  FROM $table WHERE " . $row["row"] . " = '" . $row["value"] . "' ")->getResultObject();
+        if (isset($getData[0])) {
+            return $getData[0]->$item;
+        } else {
+            return "";
+        }
+    }
+
+
+    public static function select_db($data = "", $class = "col-sm-12")
     {
         $db = \Config\Database::connect();
 
         $dataNama = $data['data'];
+        $dataVAlue = $data['data'];
 
-        $getData = $db->query("SELECT DISTINCT(" . $dataNama . ") as " . $dataNama . "  FROM " . $data['db'])->getResultObject();
+        $qr = "";
 
-        $createOption = '<option selected value="">--pilih data--</option>';
+        if (isset($data['key'])) {
+            $dataVAlue = $data['key'];
+            $qr = ", $dataVAlue";
+        }
+
+        $condition = "";
+        if (isset($data['condition'])) {
+            $condition .= " WHERE ";
+            $condition .= $data['condition']['row'];
+            $condition .= " = '";
+            $condition .= $data['condition']['value'];
+            $condition .= "'";
+        }
+
+        $getData = $db->query("SELECT DISTINCT(" . $dataNama . ") as " . $dataNama . " $qr  FROM " . $data['db'] . $condition)->getResultObject();
+
+        $createOption = '<option value="">--pilih data--</option>';
 
         foreach ($getData as $key => $value) {
-            if (isset($data['selected'])) {
-                if ($data['selected'] == $value->$dataNama) {
-                    $createOption .= '<option selected value="' . $value->$dataNama . '">' . $value->$dataNama . '</option>';
+            if (isset($data['value'])) {
+                if ($data['value'] == $value->$dataVAlue) {
+                    $createOption .= '<option selected value="' . $value->$dataVAlue . '">' . $value->$dataNama . '</option>';
                 } else {
-                    $createOption .= '<option value="' . $value->$dataNama . '">' . $value->$dataNama . '</option>';
+                    $createOption .= '<option value="' . $value->$dataVAlue . '">' . $value->$dataNama . '</option>';
                 }
             } else {
-                $createOption .= '<option value="' . $value->$dataNama . '">' . $value->$dataNama . '</option>';
+                $createOption .= '<option value="' . $value->$dataVAlue . '">' . $value->$dataNama . '</option>';
             }
         }
 
         $html = "
-        <div class='form-group'>
-            <label for='" . $data['fc'] . "'>" . $data['title'] . "</label>
-            <select id='" . $data['fc'] . "' name='data[" . $data['fc'] . "]' class='form-control'>
-                $createOption
-            </select>
+        <div class='$class'>
+            <div class='form-group'>
+                <label for='" . $data['fc'] . "' class='control-label col-lg-12'>" . $data['title'] . "</label>
+                <div class='col-lg-12'>
+                <select id='" . $data['fc'] . "' name='data[" . $data['fc'] . "]' class='form-control'>
+                    $createOption
+                </select>
+                </div>
+            </div> 
         </div> 
         ";
         echo $html;
